@@ -1,0 +1,1919 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facility-47 :: Система управления персоналом</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --scp-dark: #0c0c0c;
+            --scp-dark-secondary: #1a1a1a;
+            --scp-gray: #2d2d2d;
+            --scp-gray-light: #404040;
+            --scp-red: #cc0000;
+            --scp-red-dark: #990000;
+            --scp-text: #e0e0e0;
+            --scp-text-secondary: #a0a0a0;
+            
+            /* Цвета отделов */
+            --scientific: #FFD700;      /* Желтый */
+            --security: #808080;        /* Серый */
+            --engineering: #9b59b6;     /* Фиолетовый */
+            --medical: #FF69B4;         /* Розовый */
+            --admin: #E74C3C;           /* Красный */
+            --o5: #8B0000;              /* Темно-красный */
+            
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --glow: 0 0 10px currentColor;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--scp-dark);
+            color: var(--scp-text);
+            line-height: 1.6;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(44, 44, 44, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(44, 44, 44, 0.1) 0%, transparent 20%);
+        }
+        
+        /* Экран входа */
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+        }
+        
+        .login-container {
+            background-color: var(--scp-dark-secondary);
+            border: 2px solid var(--scp-red);
+            border-radius: 10px;
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--scientific), var(--security), var(--engineering), var(--medical), var(--admin));
+        }
+        
+        .login-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-logo-icon {
+            font-size: 3rem;
+            color: var(--scp-red);
+            margin-bottom: 10px;
+        }
+        
+        .login-logo-text {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, var(--scientific), var(--security), var(--engineering), var(--medical), var(--admin));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .login-title {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            text-align: center;
+            color: var(--scp-text);
+        }
+        
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .login-input {
+            padding: 15px;
+            background-color: var(--scp-dark);
+            border: 1px solid var(--scp-gray-light);
+            border-radius: 5px;
+            color: var(--scp-text);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .login-input:focus {
+            outline: none;
+            border-color: var(--scp-red);
+            box-shadow: 0 0 0 2px rgba(204, 0, 0, 0.2);
+        }
+        
+        .login-btn {
+            background-color: var(--scp-red);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .login-btn:hover {
+            background-color: var(--scp-red-dark);
+            box-shadow: 0 0 15px rgba(204, 0, 0, 0.5);
+        }
+        
+        .login-notice {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: var(--scp-text-secondary);
+            padding: 10px;
+            background-color: rgba(204, 0, 0, 0.1);
+            border-radius: 5px;
+            border: 1px solid rgba(204, 0, 0, 0.3);
+        }
+        
+        /* Основной интерфейс */
+        .main-interface {
+            display: none;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Шапка */
+        .header {
+            background-color: var(--scp-dark-secondary);
+            border-bottom: 3px solid var(--scp-red);
+            padding: 20px 0;
+            margin-bottom: 30px;
+            position: relative;
+            box-shadow: var(--shadow);
+        }
+        
+        .header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--scientific), var(--security), var(--engineering), var(--medical), var(--admin));
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            font-size: 2.5rem;
+            color: var(--scp-red);
+        }
+        
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--scp-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            border: 2px solid var(--scp-red);
+        }
+        
+        .user-details {
+            text-align: right;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .user-role {
+            color: var(--scp-text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .logout-btn {
+            background-color: transparent;
+            color: var(--scp-red);
+            border: 1px solid var(--scp-red);
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background-color: var(--scp-red);
+            color: white;
+        }
+        
+        /* Панель навигации */
+        .nav-panel {
+            background-color: var(--scp-dark-secondary);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--scp-red);
+            margin-bottom: 25px;
+        }
+        
+        .nav-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: var(--scp-text);
+            border-bottom: 1px solid var(--scp-gray);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-title i {
+            color: var(--scp-red);
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 12px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            background-color: var(--scp-gray);
+            border-radius: 5px;
+            color: var(--scp-text);
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            cursor: pointer;
+        }
+        
+        .nav-link:hover {
+            background-color: var(--scp-gray-light);
+            transform: translateX(5px);
+        }
+        
+        .nav-link.active {
+            background-color: var(--scp-gray-light);
+            border-left-color: var(--scp-red);
+        }
+        
+        .nav-icon {
+            font-size: 1.3rem;
+            width: 30px;
+            text-align: center;
+        }
+        
+        /* Основной контент */
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 25px;
+        }
+        
+        /* Панели контента */
+        .content-panel {
+            background-color: var(--scp-dark-secondary);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            min-height: 600px;
+            display: none;
+        }
+        
+        .content-panel.active {
+            display: block;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--scp-gray);
+        }
+        
+        .panel-title {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .panel-title i {
+            font-size: 2rem;
+        }
+        
+        /* Формы */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--scp-text);
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: var(--scp-dark);
+            border: 1px solid var(--scp-gray-light);
+            border-radius: 5px;
+            color: var(--scp-text);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--scp-red);
+            box-shadow: 0 0 0 2px rgba(204, 0, 0, 0.2);
+        }
+        
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background-color: var(--scp-red);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: var(--scp-red-dark);
+            box-shadow: 0 0 15px rgba(204, 0, 0, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: var(--scp-gray);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--scp-gray-light);
+        }
+        
+        /* Таблицы */
+        .table-container {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--scp-dark);
+        }
+        
+        .data-table th {
+            background-color: var(--scp-gray);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--scp-gray-light);
+        }
+        
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--scp-gray-light);
+        }
+        
+        .data-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Почта и чаты */
+        .mail-chat-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 25px;
+            height: 500px;
+        }
+        
+        .mail-folders {
+            background-color: var(--scp-dark);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid var(--scp-gray-light);
+        }
+        
+        .mail-list {
+            background-color: var(--scp-dark);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid var(--scp-gray-light);
+            overflow-y: auto;
+        }
+        
+        .mail-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--scp-gray-light);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .mail-item:hover {
+            background-color: var(--scp-gray);
+        }
+        
+        .mail-item.unread {
+            font-weight: bold;
+        }
+        
+        .mail-sender {
+            color: var(--scp-red);
+            font-weight: 600;
+        }
+        
+        .mail-subject {
+            margin: 5px 0;
+        }
+        
+        .mail-preview {
+            color: var(--scp-text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .mail-view {
+            background-color: var(--scp-dark);
+            border-radius: 8px;
+            padding: 25px;
+            border: 1px solid var(--scp-gray-light);
+            overflow-y: auto;
+        }
+        
+        .mail-header {
+            border-bottom: 1px solid var(--scp-gray-light);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .mail-body {
+            line-height: 1.8;
+        }
+        
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            transform: translateX(150%);
+            transition: transform 0.5s;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background-color: #27ae60;
+            border-left: 5px solid #2ecc71;
+        }
+        
+        .notification.error {
+            background-color: #c0392b;
+            border-left: 5px solid #e74c3c;
+        }
+        
+        .notification.info {
+            background-color: #2980b9;
+            border-left: 5px solid #3498db;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 1100px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .mail-chat-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .user-details {
+                text-align: center;
+            }
+            
+            .login-container {
+                padding: 25px;
+            }
+        }
+        
+        /* Секретные штампы */
+        .stamp {
+            position: fixed;
+            opacity: 0.03;
+            font-size: 8rem;
+            font-weight: bold;
+            color: var(--scp-red);
+            z-index: -1;
+            transform: rotate(-45deg);
+            user-select: none;
+            pointer-events: none;
+        }
+        
+        .stamp-1 {
+            top: 20%;
+            left: 10%;
+        }
+        
+        .stamp-2 {
+            top: 60%;
+            right: 10%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Секретные штампы -->
+    <div class="stamp stamp-1">СОВЕРШЕННО СЕКРЕТНО</div>
+    <div class="stamp stamp-2">УРОВЕНЬ 5</div>
+    
+    <!-- Уведомления -->
+    <div id="notification" class="notification"></div>
+    
+    <!-- Экран входа -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-container">
+            <div class="login-logo">
+                <div class="login-logo-icon"><i class="fas fa-database"></i></div>
+                <div class="login-logo-text">Facility-47</div>
+            </div>
+            <h2 class="login-title">Система управления персоналом</h2>
+            <form class="login-form" id="login-form">
+                <input type="text" class="login-input" id="login-username" placeholder="Логин" required>
+                <input type="password" class="login-input" id="login-password" placeholder="Пароль" required>
+                <button type="submit" class="login-btn">Войти в систему</button>
+            </form>
+            <div class="login-notice">
+                <i class="fas fa-info-circle"></i> Только авторизованный персонал
+            </div>
+        </div>
+    </div>
+    
+    <!-- Основной интерфейс -->
+    <div id="main-interface" class="main-interface">
+        <!-- Шапка -->
+        <header class="header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo">
+                        <div class="logo-icon"><i class="fas fa-database"></i></div>
+                        <div class="logo-text">Facility-47</div>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-avatar" id="user-avatar">O5</div>
+                        <div class="user-details">
+                            <div class="user-name" id="user-name">O5-Совет</div>
+                            <div class="user-role" id="user-role">Уровень 5</div>
+                        </div>
+                        <button class="logout-btn" onclick="logout()">Выйти</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Основной контент -->
+        <main class="container">
+            <div class="main-content">
+                <!-- Панель навигации -->
+                <nav class="nav-panel">
+                    <div class="nav-title">
+                        <i class="fas fa-bars"></i>
+                        Навигация
+                    </div>
+                    <ul class="nav-menu">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-panel="dashboard">
+                                <div class="nav-icon"><i class="fas fa-home"></i></div>
+                                <span>Панель управления</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-panel="personnel">
+                                <div class="nav-icon"><i class="fas fa-users"></i></div>
+                                <span>Сотрудники</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-panel="departments">
+                                <div class="nav-icon"><i class="fas fa-building"></i></div>
+                                <span>Отделы</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-panel="mail">
+                                <div class="nav-icon"><i class="fas fa-envelope"></i></div>
+                                <span>Внутренняя почта</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-panel="chat">
+                                <div class="nav-icon"><i class="fas fa-comments"></i></div>
+                                <span>Чаты</span>
+                            </a>
+                        </li>
+                        <li class="nav-item" id="admin-nav">
+                            <a class="nav-link" data-panel="admin">
+                                <div class="nav-icon"><i class="fas fa-user-secret"></i></div>
+                                <span>Панель O5-Совета</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <!-- Панель управления -->
+                <div id="dashboard-panel" class="content-panel active">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-home"></i>
+                            Панель управления
+                        </div>
+                        <div class="quota-display">
+                            Общая занятость: <span id="total-count">0/30</span>
+                        </div>
+                    </div>
+                    <div id="dashboard-content">
+                        <!-- Контент загружается динамически -->
+                    </div>
+                </div>
+                
+                <!-- Панель сотрудников -->
+                <div id="personnel-panel" class="content-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-users"></i>
+                            Управление сотрудниками
+                        </div>
+                        <button class="btn" onclick="showRegisterModal()">
+                            <i class="fas fa-user-plus"></i> Добавить сотрудника
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table" id="personnel-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>ФИО</th>
+                                    <th>Логин</th>
+                                    <th>Отдел</th>
+                                    <th>Роль</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Данные загружаются динамически -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Панель отделов -->
+                <div id="departments-panel" class="content-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-building"></i>
+                            Отделы объекта
+                        </div>
+                    </div>
+                    <div id="departments-content">
+                        <!-- Контент загружается динамически -->
+                    </div>
+                </div>
+                
+                <!-- Панель почты -->
+                <div id="mail-panel" class="content-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-envelope"></i>
+                            Внутренняя почта
+                        </div>
+                        <button class="btn" onclick="composeMail()">
+                            <i class="fas fa-edit"></i> Написать письмо
+                        </button>
+                    </div>
+                    <div class="mail-chat-container">
+                        <div class="mail-folders">
+                            <h3 style="margin-bottom: 15px;">Папки</h3>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <button class="btn-secondary" onclick="loadMail('inbox')">
+                                    <i class="fas fa-inbox"></i> Входящие
+                                </button>
+                                <button class="btn-secondary" onclick="loadMail('sent')">
+                                    <i class="fas fa-paper-plane"></i> Отправленные
+                                </button>
+                                <button class="btn-secondary" onclick="loadMail('new')">
+                                    <i class="fas fa-edit"></i> Написать письмо
+                                </button>
+                            </div>
+                        </div>
+                        <div id="mail-content">
+                            <!-- Контент почты загружается динамически -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Панель чатов -->
+                <div id="chat-panel" class="content-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-comments"></i>
+                            Чаты
+                        </div>
+                        <button class="btn" onclick="createChat()">
+                            <i class="fas fa-plus"></i> Создать чат
+                        </button>
+                    </div>
+                    <div class="mail-chat-container">
+                        <div class="mail-folders">
+                            <h3 style="margin-bottom: 15px;">Список чатов</h3>
+                            <div id="chat-list">
+                                <!-- Список чатов загружается динамически -->
+                            </div>
+                        </div>
+                        <div id="chat-content">
+                            <!-- Контент чата загружается динамически -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Панель O5-Совета -->
+                <div id="admin-panel" class="content-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-user-secret"></i>
+                            Панель O5-Совета
+                        </div>
+                    </div>
+                    <div id="admin-content">
+                        <!-- Контент загружается динамически -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Модальное окно регистрации -->
+    <div id="modal-register" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: var(--scp-dark-secondary); padding: 30px; border-radius: 10px; width: 90%; max-width: 500px; border: 2px solid var(--scp-red);">
+            <h2 style="color: var(--scp-red); margin-bottom: 20px;">Регистрация сотрудника</h2>
+            <form id="register-form" onsubmit="return registerUser(event)">
+                <div class="form-group">
+                    <label class="form-label">Полное имя</label>
+                    <input type="text" class="form-input" id="reg-name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Логин</label>
+                    <input type="text" class="form-input" id="reg-username" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Пароль</label>
+                    <input type="password" class="form-input" id="reg-password" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ссылка на квенту</label>
+                    <input type="url" class="form-input" id="reg-quenta" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Отдел</label>
+                    <select class="form-select" id="reg-department" required>
+                        <option value="">Выберите отдел</option>
+                        <option value="scientific">Научный персонал</option>
+                        <option value="security">Служба безопасности</option>
+                        <option value="engineering">Инженерно-техническая служба</option>
+                        <option value="medical">Медицинский персонал</option>
+                        <option value="admin">Административный отдел</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Роль</label>
+                    <select class="form-select" id="reg-role" required>
+                        <option value="personnel">Сотрудник</option>
+                        <option value="head">Руководитель отдела</option>
+                        <option value="o5">Член O5-Совета</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn" style="flex: 1;">Зарегистрировать</button>
+                    <button type="button" class="btn-secondary" onclick="closeRegisterModal()" style="flex: 1;">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Основной объект данных системы
+        const systemData = {
+            version: "3.1",
+            lastUpdated: new Date().toISOString(),
+            departments: {
+                scientific: {
+                    name: "Научный персонал",
+                    color: "#FFD700",
+                    max: 8,
+                    current: 0,
+                    headCode: "SCI-HEAD-" + Math.random().toString(36).substr(2, 6).toUpperCase()
+                },
+                security: {
+                    name: "Служба безопасности",
+                    color: "#808080",
+                    max: 10,
+                    current: 0,
+                    headCode: "SEC-HEAD-" + Math.random().toString(36).substr(2, 6).toUpperCase()
+                },
+                engineering: {
+                    name: "Инженерно-техническая служба",
+                    color: "#9b59b6",
+                    max: 5,
+                    current: 0,
+                    headCode: "ENG-HEAD-" + Math.random().toString(36).substr(2, 6).toUpperCase()
+                },
+                medical: {
+                    name: "Медицинский персонал",
+                    color: "#FF69B4",
+                    max: 3,
+                    current: 0,
+                    headCode: "MED-HEAD-" + Math.random().toString(36).substr(2, 6).toUpperCase()
+                },
+                admin: {
+                    name: "Административный отдел",
+                    color: "#E74C3C",
+                    max: 4,
+                    current: 0,
+                    headCode: "ADM-HEAD-" + Math.random().toString(36).substr(2, 6).toUpperCase()
+                }
+            },
+            personnel: [],
+            mail: [],
+            chats: []
+        };
+
+        // Текущий пользователь
+        let currentUser = null;
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Загружаем данные
+            loadData();
+            
+            // Настраиваем обработчики событий
+            setupEventListeners();
+            
+            // Проверяем сессию
+            checkSession();
+        });
+
+        // Загрузка данных
+        function loadData() {
+            const savedData = localStorage.getItem('facility47_data');
+            if (savedData) {
+                const parsed = JSON.parse(savedData);
+                Object.assign(systemData, parsed);
+                
+                // Пересчитываем текущие значения
+                for (const dept in systemData.departments) {
+                    systemData.departments[dept].current = systemData.personnel.filter(p => 
+                        p.department === dept
+                    ).length;
+                }
+            }
+            
+            // Создаем предустановленного пользователя O5-1 если его нет
+            if (!systemData.personnel.find(p => p.username === "05-1")) {
+                const o5User = {
+                    id: "F47-O5-001",
+                    username: "05-1",
+                    password: "folter-лох",
+                    fullName: "Член O5-Совета #1",
+                    department: "o5",
+                    role: "o5",
+                    quentaUrl: "",
+                    createdAt: new Date().toISOString(),
+                    avatarColor: "#8B0000"
+                };
+                systemData.personnel.push(o5User);
+                saveData();
+            }
+        }
+
+        // Сохранение данных
+        function saveData() {
+            systemData.lastUpdated = new Date().toISOString();
+            localStorage.setItem('facility47_data', JSON.stringify(systemData));
+            updateUI();
+        }
+
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            // Форма входа
+            document.getElementById('login-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                login();
+            });
+            
+            // Навигация
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const panel = this.getAttribute('data-panel');
+                    switchPanel(panel);
+                });
+            });
+        }
+
+        // Проверка сессии
+        function checkSession() {
+            const session = localStorage.getItem('facility47_session');
+            if (session) {
+                try {
+                    const sessionData = JSON.parse(session);
+                    if (sessionData.expires > Date.now()) {
+                        currentUser = sessionData.user;
+                        showMainInterface();
+                        return true;
+                    }
+                } catch (e) {
+                    console.error("Ошибка при чтении сессии:", e);
+                }
+            }
+            return false;
+        }
+
+        // Вход в систему
+        function login() {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+            
+            // Поиск пользователя
+            const user = systemData.personnel.find(p => p.username === username && p.password === password);
+            
+            if (user) {
+                currentUser = user;
+                
+                // Создаем сессию
+                const sessionData = {
+                    user: user,
+                    expires: Date.now() + (24 * 60 * 60 * 1000) // 24 часа
+                };
+                localStorage.setItem('facility47_session', JSON.stringify(sessionData));
+                
+                showMainInterface();
+            } else {
+                showNotification("Неверный логин или пароль!", "error");
+            }
+        }
+
+        // Выход из системы
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('facility47_session');
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('main-interface').style.display = 'none';
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+        }
+
+        // Показать основной интерфейс
+        function showMainInterface() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-interface').style.display = 'block';
+            
+            // Обновляем информацию о пользователе
+            if (currentUser) {
+                document.getElementById('user-name').textContent = currentUser.fullName;
+                document.getElementById('user-role').textContent = getRoleName(currentUser.role);
+                document.getElementById('user-avatar').textContent = currentUser.fullName.charAt(0);
+                
+                if (currentUser.avatarColor) {
+                    document.getElementById('user-avatar').style.backgroundColor = currentUser.avatarColor;
+                }
+            }
+            
+            // Загружаем панель управления
+            loadDashboard();
+            updateUI();
+            
+            showNotification(`Добро пожаловать, ${currentUser.fullName}!`, "success");
+        }
+
+        // Переключение панелей
+        function switchPanel(panelId) {
+            // Снимаем активный класс со всех ссылок
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Устанавливаем активный класс текущей ссылке
+            document.querySelector(`.nav-link[data-panel="${panelId}"]`).classList.add('active');
+            
+            // Скрываем все панели
+            document.querySelectorAll('.content-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Показываем выбранную панель
+            const targetPanel = document.getElementById(`${panelId}-panel`);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+                
+                // Загружаем контент панели
+                switch(panelId) {
+                    case 'dashboard':
+                        loadDashboard();
+                        break;
+                    case 'personnel':
+                        loadPersonnelTable();
+                        break;
+                    case 'departments':
+                        loadDepartments();
+                        break;
+                    case 'mail':
+                        loadMail('inbox');
+                        break;
+                    case 'chat':
+                        loadChats();
+                        break;
+                    case 'admin':
+                        loadAdminPanel();
+                        break;
+                }
+            }
+        }
+
+        // Загрузка панели управления
+        function loadDashboard() {
+            let totalCurrent = 0;
+            let totalMax = 0;
+            
+            for (const dept in systemData.departments) {
+                totalCurrent += systemData.departments[dept].current;
+                totalMax += systemData.departments[dept].max;
+            }
+            
+            document.getElementById('total-count').textContent = `${totalCurrent}/${totalMax}`;
+            
+            let content = '';
+            
+            if (currentUser.role === 'o5') {
+                content = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <div style="background-color: var(--scp-gray); padding: 20px; border-radius: 8px; border-left: 5px solid var(--o5);">
+                            <h3 style="margin-bottom: 15px; color: var(--o5);"><i class="fas fa-crown"></i> O5-Совет</h3>
+                            <p>Вы вошли как: <strong>${currentUser.fullName}</strong></p>
+                            <p>Уровень доступа: <strong>Максимальный (Уровень 5)</strong></p>
+                            <p>Общее количество сотрудников: <strong>${systemData.personnel.length}</strong></p>
+                        </div>
+                        
+                        <div style="background-color: var(--scp-gray); padding: 20px; border-radius: 8px; border-left: 5px solid var(--scp-red);">
+                            <h3 style="margin-bottom: 15px;"><i class="fas fa-chart-bar"></i> Статистика системы</h3>
+                            <p>Всего сотрудников: <strong>${systemData.personnel.length}</strong></p>
+                            <p>Общая занятость: <strong>${totalCurrent}/${totalMax}</strong></p>
+                            <p>Внутренних писем: <strong>${systemData.mail.length}</strong></p>
+                            <p>Активных чатов: <strong>${systemData.chats.length}</strong></p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px;">
+                        <h3 style="margin-bottom: 20px;">Быстрые действия</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <button class="btn" onclick="showRegisterModal()">
+                                <i class="fas fa-user-plus"></i> Добавить сотрудника
+                            </button>
+                            <button class="btn" onclick="switchPanel('admin')">
+                                <i class="fas fa-cog"></i> Управление системой
+                            </button>
+                            <button class="btn" onclick="composeMail()">
+                                <i class="fas fa-envelope"></i> Написать письмо
+                            </button>
+                            <button class="btn" onclick="exportAllData()">
+                                <i class="fas fa-download"></i> Экспорт данных
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const dept = systemData.departments[currentUser.department];
+                content = `
+                    <div style="background-color: var(--scp-gray); padding: 25px; border-radius: 8px; border-left: 5px solid ${dept ? dept.color : '#fff'};">
+                        <h3 style="margin-bottom: 20px;">Добро пожаловать, ${currentUser.fullName}!</h3>
+                        <p>Ваш отдел: <strong>${dept ? dept.name : 'O5-Совет'}</strong></p>
+                        <p>Ваша роль: <strong>${getRoleName(currentUser.role)}</strong></p>
+                        <p>ID сотрудника: <strong>${currentUser.id}</strong></p>
+                        
+                        ${currentUser.quentaUrl ? `
+                            <div style="margin-top: 20px;">
+                                <p>Ссылка на вашу квенту:</p>
+                                <a href="${currentUser.quentaUrl}" target="_blank" style="color: var(--scp-red); word-break: break-all;">
+                                    ${currentUser.quentaUrl}
+                                </a>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            document.getElementById('dashboard-content').innerHTML = content;
+        }
+
+        // Обновление UI
+        function updateUI() {
+            // Обновляем счетчики в навигации
+            let totalCurrent = 0;
+            let totalMax = 0;
+            
+            for (const dept in systemData.departments) {
+                totalCurrent += systemData.departments[dept].current;
+                totalMax += systemData.departments[dept].max;
+            }
+            
+            document.getElementById('total-count').textContent = `${totalCurrent}/${totalMax}`;
+        }
+
+        // Показать модальное окно регистрации
+        function showRegisterModal() {
+            document.getElementById('modal-register').style.display = 'flex';
+        }
+
+        // Закрыть модальное окно регистрации
+        function closeRegisterModal() {
+            document.getElementById('modal-register').style.display = 'none';
+            document.getElementById('register-form').reset();
+        }
+
+        // Регистрация пользователя
+        function registerUser(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('reg-name').value.trim();
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const quenta = document.getElementById('reg-quenta').value.trim();
+            const department = document.getElementById('reg-department').value;
+            const role = document.getElementById('reg-role').value;
+            
+            // Проверка данных
+            if (!name || !username || !password || !department) {
+                showNotification("Заполните все обязательные поля!", "error");
+                return false;
+            }
+            
+            // Проверка уникальности логина
+            if (systemData.personnel.find(p => p.username === username)) {
+                showNotification("Пользователь с таким логином уже существует!", "error");
+                return false;
+            }
+            
+            // Проверка квоты отдела
+            if (department !== 'o5' && systemData.departments[department].current >= systemData.departments[department].max) {
+                showNotification(`Квота отдела "${systemData.departments[department].name}" исчерпана!`, "error");
+                return false;
+            }
+            
+            // Создание пользователя
+            const newUser = {
+                id: generateId(),
+                username: username,
+                password: password,
+                fullName: name,
+                department: department,
+                role: role,
+                quentaUrl: quenta,
+                createdAt: new Date().toISOString(),
+                avatarColor: getRandomColor()
+            };
+            
+            systemData.personnel.push(newUser);
+            
+            // Обновляем счетчик отдела если это не O5
+            if (department !== 'o5') {
+                systemData.departments[department].current++;
+            }
+            
+            saveData();
+            
+            showNotification(`Пользователь ${name} успешно зарегистрирован!`, "success");
+            closeRegisterModal();
+            
+            // Обновляем таблицу сотрудников если она активна
+            if (document.getElementById('personnel-panel').classList.contains('active')) {
+                loadPersonnelTable();
+            }
+            
+            return false;
+        }
+
+        // Загрузка таблицы сотрудников
+        function loadPersonnelTable() {
+            const tableBody = document.querySelector('#personnel-table tbody');
+            tableBody.innerHTML = '';
+            
+            if (systemData.personnel.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 30px;">
+                            Нет зарегистрированных сотрудников
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            systemData.personnel.forEach(person => {
+                const row = tableBody.insertRow();
+                const dept = systemData.departments[person.department];
+                
+                row.innerHTML = `
+                    <td>${person.id}</td>
+                    <td>${person.fullName}</td>
+                    <td>${person.username}</td>
+                    <td><span style="color: ${dept ? dept.color : '#fff'}">${dept ? dept.name : 'O5-Совет'}</span></td>
+                    <td>${getRoleName(person.role)}</td>
+                    <td>
+                        ${currentUser.role === 'o5' ? `
+                            <button class="btn-secondary" onclick="editUser('${person.id}')" style="padding: 5px 10px; margin-right: 5px;">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn" onclick="deleteUser('${person.id}')" style="padding: 5px 10px;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        ` : ''}
+                    </td>
+                `;
+            });
+        }
+
+        // Загрузка информации об отделах
+        function loadDepartments() {
+            let content = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">';
+            
+            for (const [key, dept] of Object.entries(systemData.departments)) {
+                const personnelInDept = systemData.personnel.filter(p => p.department === key);
+                
+                content += `
+                    <div style="background-color: var(--scp-gray); padding: 20px; border-radius: 8px; border-left: 5px solid ${dept.color};">
+                        <h3 style="margin-bottom: 15px; color: ${dept.color};">${dept.name}</h3>
+                        <p>Максимальное количество: <strong>${dept.max}</strong></p>
+                        <p>Текущее количество: <strong>${dept.current}</strong></p>
+                        <p>Свободных мест: <strong>${dept.max - dept.current}</strong></p>
+                        <p style="margin-top: 15px;">Код руководителя: <code>${dept.headCode}</code></p>
+                        <p style="margin-top: 15px;">Сотрудники:</p>
+                        <ul style="margin-top: 10px; padding-left: 20px; max-height: 150px; overflow-y: auto;">
+                            ${personnelInDept.map(p => `<li>${p.fullName} (${getRoleName(p.role)})</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            content += '</div>';
+            document.getElementById('departments-content').innerHTML = content;
+        }
+
+        // Загрузка почты
+        function loadMail(folder) {
+            let content = '';
+            
+            if (folder === 'new') {
+                content = `
+                    <div class="mail-view">
+                        <h3 style="margin-bottom: 20px;">Новое письмо</h3>
+                        <form onsubmit="sendMail(event)">
+                            <div class="form-group">
+                                <label class="form-label">Кому</label>
+                                <select class="form-select" id="mail-to" required>
+                                    <option value="">Выберите получателя</option>
+                                    <option value="all">Все сотрудники</option>
+                                    ${Object.entries(systemData.departments).map(([key, dept]) => `
+                                        <option value="dept_${key}">Отдел: ${dept.name}</option>
+                                    `).join('')}
+                                    ${systemData.personnel.map(p => `
+                                        <option value="user_${p.id}">${p.fullName} (${p.department})</option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Тема</label>
+                                <input type="text" class="form-input" id="mail-subject" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Сообщение</label>
+                                <textarea class="form-textarea" id="mail-body" required></textarea>
+                            </div>
+                            <button type="submit" class="btn">
+                                <i class="fas fa-paper-plane"></i> Отправить
+                            </button>
+                        </form>
+                    </div>
+                `;
+            } else {
+                let mailItems = [];
+                
+                if (folder === 'inbox') {
+                    mailItems = systemData.mail.filter(m => 
+                        m.to === currentUser.id || 
+                        m.to === `dept_${currentUser.department}` ||
+                        m.to === 'all'
+                    );
+                } else if (folder === 'sent') {
+                    mailItems = systemData.mail.filter(m => m.from === currentUser.id);
+                }
+                
+                // Сортировка по дате
+                mailItems.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                if (mailItems.length === 0) {
+                    content = `
+                        <div class="mail-view" style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                            <div style="text-align: center;">
+                                <i class="fas fa-envelope-open" style="font-size: 3rem; color: var(--scp-text-secondary); margin-bottom: 20px;"></i>
+                                <h3>Нет писем</h3>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    content = '<div class="mail-list">';
+                    
+                    mailItems.forEach((mail, index) => {
+                        const fromUser = systemData.personnel.find(p => p.id === mail.from);
+                        const isUnread = !mail.read && folder === 'inbox';
+                        
+                        content += `
+                            <div class="mail-item ${isUnread ? 'unread' : ''}" onclick="viewMail('${folder}', ${index})">
+                                <div class="mail-sender">
+                                    ${fromUser ? fromUser.fullName : 'Система'}
+                                    ${folder === 'sent' ? ' → ' + getRecipientName(mail.to) : ''}
+                                </div>
+                                <div class="mail-subject">${mail.subject}</div>
+                                <div class="mail-preview">${mail.body.substring(0, 100)}...</div>
+                                <div style="color: var(--scp-text-secondary); font-size: 0.8rem; margin-top: 5px;">
+                                    ${new Date(mail.date).toLocaleString('ru-RU')}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    content += '</div>';
+                }
+            }
+            
+            document.getElementById('mail-content').innerHTML = content;
+        }
+
+        // Отправка письма
+        function sendMail(event) {
+            event.preventDefault();
+            
+            const to = document.getElementById('mail-to').value;
+            const subject = document.getElementById('mail-subject').value;
+            const body = document.getElementById('mail-body').value;
+            
+            const newMail = {
+                id: generateId(),
+                from: currentUser.id,
+                to: to,
+                subject: subject,
+                body: body,
+                date: new Date().toISOString(),
+                read: false
+            };
+            
+            systemData.mail.push(newMail);
+            saveData();
+            
+            showNotification("Письмо отправлено!", "success");
+            loadMail('sent');
+        }
+
+        // Просмотр письма
+        function viewMail(folder, index) {
+            let mail;
+            
+            if (folder === 'inbox') {
+                const inboxMails = systemData.mail.filter(m => 
+                    m.to === currentUser.id || 
+                    m.to === `dept_${currentUser.department}` ||
+                    m.to === 'all'
+                );
+                mail = inboxMails[index];
+            } else if (folder === 'sent') {
+                const sentMails = systemData.mail.filter(m => m.from === currentUser.id);
+                mail = sentMails[index];
+            }
+            
+            if (!mail) return;
+            
+            const fromUser = systemData.personnel.find(p => p.id === mail.from);
+            
+            let content = `
+                <div class="mail-view">
+                    <div class="mail-header">
+                        <h3>${mail.subject}</h3>
+                        <p style="margin-top: 10px;">От: <strong>${fromUser ? fromUser.fullName : 'Система'}</strong></p>
+                        <p>Кому: <strong>${getRecipientName(mail.to)}</strong></p>
+                        <p>Дата: ${new Date(mail.date).toLocaleString('ru-RU')}</p>
+                    </div>
+                    <div class="mail-body">
+                        ${mail.body.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('mail-content').innerHTML = content;
+            
+            // Пометить как прочитанное
+            if (folder === 'inbox') {
+                mail.read = true;
+                saveData();
+            }
+        }
+
+        // Загрузка чатов
+        function loadChats() {
+            // Загрузить список чатов
+            let chatList = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+            
+            const userChats = systemData.chats.filter(chat => 
+                chat.participants.includes(currentUser.id) || chat.createdBy === currentUser.id
+            );
+            
+            if (userChats.length === 0) {
+                chatList += `
+                    <div style="text-align: center; padding: 20px; color: var(--scp-text-secondary);">
+                        <i class="fas fa-comments" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                        <p>У вас нет активных чатов</p>
+                    </div>
+                `;
+            } else {
+                userChats.forEach((chat, index) => {
+                    chatList += `
+                        <button class="btn-secondary" onclick="openChat(${index})" style="text-align: left;">
+                            <div><strong>${chat.name}</strong></div>
+                            <div style="font-size: 0.8rem; color: var(--scp-text-secondary);">
+                                Участников: ${chat.participants.length}
+                            </div>
+                        </button>
+                    `;
+                });
+            }
+            
+            chatList += '</div>';
+            document.getElementById('chat-list').innerHTML = chatList;
+            
+            // Показать пустой экран чата
+            document.getElementById('chat-content').innerHTML = `
+                <div class="mail-view" style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                    <div style="text-align: center;">
+                        <i class="fas fa-comments" style="font-size: 3rem; color: var(--scp-text-secondary); margin-bottom: 20px;"></i>
+                        <h3>Выберите чат</h3>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Создание чата
+        function createChat() {
+            let content = `
+                <div class="mail-view">
+                    <h3 style="margin-bottom: 20px;">Создать новый чат</h3>
+                    <form onsubmit="createNewChat(event)">
+                        <div class="form-group">
+                            <label class="form-label">Название чата</label>
+                            <input type="text" class="form-input" id="chat-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Участники</label>
+                            <select class="form-select" id="chat-participants" multiple style="height: 200px;">
+                                ${systemData.personnel.map(p => `
+                                    <option value="${p.id}">${p.fullName} (${p.department})</option>
+                                `).join('')}
+                            </select>
+                            <div style="font-size: 0.9rem; color: var(--scp-text-secondary); margin-top: 5px;">
+                                Удерживайте Ctrl для выбора нескольких участников
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">
+                            <i class="fas fa-plus"></i> Создать чат
+                        </button>
+                    </form>
+                </div>
+            `;
+            
+            document.getElementById('chat-content').innerHTML = content;
+        }
+
+        // Создание нового чата
+        function createNewChat(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('chat-name').value;
+            const participants = Array.from(document.getElementById('chat-participants').selectedOptions).map(o => o.value);
+            
+            // Добавить создателя в участники
+            if (!participants.includes(currentUser.id)) {
+                participants.push(currentUser.id);
+            }
+            
+            const newChat = {
+                id: generateId(),
+                name: name,
+                createdBy: currentUser.id,
+                participants: participants,
+                messages: [],
+                createdAt: new Date().toISOString()
+            };
+            
+            systemData.chats.push(newChat);
+            saveData();
+            
+            showNotification("Чат создан!", "success");
+            loadChats();
+        }
+
+        // Открытие чата
+        function openChat(index) {
+            const userChats = systemData.chats.filter(chat => 
+                chat.participants.includes(currentUser.id) || chat.createdBy === currentUser.id
+            );
+            
+            const chat = userChats[index];
+            if (!chat) return;
+            
+            // Найти фактический индекс
+            const actualIndex = systemData.chats.findIndex(c => c.id === chat.id);
+            
+            let content = `
+                <div class="mail-view">
+                    <div class="mail-header">
+                        <h3>${chat.name}</h3>
+                        <p style="margin-top: 10px;">Участников: ${chat.participants.length}</p>
+                    </div>
+                    <div id="chat-messages" style="height: 300px; overflow-y: auto; margin-bottom: 20px; padding: 15px; background-color: var(--scp-dark); border-radius: 5px;">
+                        ${chat.messages.length === 0 ? `
+                            <div style="text-align: center; padding: 20px; color: var(--scp-text-secondary);">
+                                <i class="fas fa-comment-slash" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                                <p>Нет сообщений</p>
+                            </div>
+                        ` : chat.messages.map(msg => {
+                            const user = systemData.personnel.find(p => p.id === msg.sender);
+                            const dept = user ? systemData.departments[user.department] : null;
+                            return `
+                                <div style="margin-bottom: 15px;">
+                                    <div style="font-weight: bold; color: ${dept ? dept.color : '#fff'}">
+                                        ${user ? user.fullName : 'Неизвестно'}
+                                    </div>
+                                    <div style="margin-top: 5px; padding: 10px; background-color: rgba(255,255,255,0.05); border-radius: 5px;">${msg.text}</div>
+                                    <div style="font-size: 0.8rem; color: var(--scp-text-secondary); margin-top: 5px;">
+                                        ${new Date(msg.time).toLocaleString('ru-RU')}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    <form onsubmit="sendMessage(event, ${actualIndex})">
+                        <div class="form-group">
+                            <textarea class="form-textarea" id="chat-message" placeholder="Введите сообщение..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn">
+                            <i class="fas fa-paper-plane"></i> Отправить
+                        </button>
+                    </form>
+                </div>
+            `;
+            
+            document.getElementById('chat-content').innerHTML = content;
+            
+            // Прокрутить вниз
+            setTimeout(() => {
+                const messagesDiv = document.getElementById('chat-messages');
+                if (messagesDiv) {
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+            }, 100);
+        }
+
+        // Отправка сообщения в чат
+        function sendMessage(event, chatIndex) {
+            event.preventDefault();
+            
+            const text = document.getElementById('chat-message').value;
+            const chat = systemData.chats[chatIndex];
+            
+            const newMessage = {
+                sender: currentUser.id,
+                text: text,
+                time: new Date().toISOString()
+            };
+            
+            chat.messages.push(newMessage);
+            saveData();
+            
+            // Очистить поле ввода
+            document.getElementById('chat-message').value = '';
+            
+            // Обновить чат
+            const userChats = systemData.chats.filter(c => 
+                c.participants.includes(currentUser.id) || c.createdBy === currentUser.id
+            );
+            const userChatIndex = userChats.findIndex(c => c.id === chat.id);
+            openChat(userChatIndex);
+        }
+
+        // Загрузка панели O5-Совета
+        function loadAdminPanel() {
+            let content = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                    <div style="background-color: var(--scp-gray); padding: 20px; border-radius: 8px; border-left: 5px solid var(--o5);">
+                        <h3 style="margin-bottom: 15px; color: var(--o5);"><i class="fas fa-sliders-h"></i> Управление квотами</h3>
+                        ${Object.entries(systemData.departments).map(([key, dept]) => `
+                            <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--scp-gray-light);">
+                                <div style="color: ${dept.color}; font-weight: bold;">${dept.name}</div>
+                                <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                                    <input type="number" id="quota-${key}" value="${dept.max}" min="1" max="100" style="width: 80px; padding: 5px; background-color: var(--scp-dark); border: 1px solid var(--scp-gray-light); color: white; border-radius: 3px;">
+                                    <button class="btn-secondary" onclick="updateQuota('${key}')" style="padding: 5px 10px;">Изменить</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="background-color: var(--scp-gray); padding: 20px; border-radius: 8px; border-left: 5px solid var(--o5);">
+                        <h3 style="margin-bottom: 15px; color: var(--o5);"><i class="fas fa-key"></i> Управление кодами</h3>
+                        ${Object.entries(systemData.departments).map(([key, dept]) => `
+                            <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--scp-gray-light);">
+                                <div style="color: ${dept.color}; font-weight: bold;">${dept.name}</div>
+                                <div style="margin-top: 10px;">
+                                    <div style="font-family: monospace; background-color: var(--scp-dark); padding: 8px; border-radius: 3px; margin-bottom: 10px;">
+                                        ${dept.headCode}
+                                    </div>
+                                    <button class="btn-secondary" onclick="generateNewCode('${key}')" style="padding: 5px 10px; width: 100%;">
+                                        Сгенерировать новый код
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="background-color: var(--scp-gray); padding: 20px; border-radius: 8px; border-left: 5px solid var(--o5);">
+                        <h3 style="margin-bottom: 15px; color: var(--o5);"><i class="fas fa-database"></i> Управление системой</h3>
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <button class="btn" onclick="exportAllData()">
+                                <i class="fas fa-download"></i> Экспорт данных
+                            </button>
+                            <button class="btn" onclick="deleteAllData()" style="background-color: #c0392b;">
+                                <i class="fas fa-trash"></i> Удалить все данные
+                            </button>
+                            <button class="btn" onclick="changeO5Password()" style="background-color: #e67e22;">
+                                <i class="fas fa-lock"></i> Изменить пароль O5
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('admin-content').innerHTML = content;
+        }
+
+        // Обновление квоты
+        function updateQuota(deptKey) {
+            const newMax = parseInt(document.getElementById(`quota-${deptKey}`).value);
+            const dept = systemData.departments[deptKey];
+            
+            if (newMax < dept.current) {
+                showNotification(`Квота не может быть меньше текущего количества (${dept.current})!`, "error");
+                document.getElementById(`quota-${deptKey}`).value = dept.max;
+                return;
+            }
+            
+            dept.max = newMax;
+            saveData();
+            showNotification(`Квота отдела "${dept.name}" изменена`, "success");
+        }
+
+        // Генерация нового кода
+        function generateNewCode(deptKey) {
+            const newCode = deptKey.toUpperCase().substr(0, 3) + "-HEAD-" + Math.random().toString(36).substr(2, 8).toUpperCase();
+            systemData.departments[deptKey].headCode = newCode;
+            saveData();
+            showNotification(`Новый код для отдела "${systemData.departments[deptKey].name}"`, "success");
+            loadAdminPanel();
+        }
+
+        // Экспорт данных
+        function exportAllData() {
+            const dataStr = JSON.stringify(systemData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `facility47_backup_${new Date().toISOString().slice(0,10)}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showNotification("Данные экспортированы", "success");
+        }
+
+        // Удаление всех данных
+        function deleteAllData() {
+            if (confirm("ВНИМАНИЕ: Вы собираетесь удалить ВСЕ данные системы!")) {
+                localStorage.removeItem('facility47_data');
+                localStorage.removeItem('facility47_session');
+                location.reload();
+            }
+        }
+
+        // Изменение пароля O5
+        function changeO5Password() {
+            const newPassword = prompt("Введите новый пароль для O5-Совета:");
+            if (newPassword) {
+                // Обновить пароль у пользователя O5-1
+                const o5User = systemData.personnel.find(p => p.username === "05-1");
+                if (o5User) {
+                    o5User.password = newPassword;
+                    saveData();
+                    showNotification("Пароль O5 изменен", "success");
+                }
+            }
+        }
+
+        // Редактирование пользователя
+        function editUser(userId) {
+            const user = systemData.personnel.find(p => p.id === userId);
+            if (!user) return;
+            
+            const newName = prompt("Новое полное имя:", user.fullName);
+            if (newName) user.fullName = newName;
+            
+            const newUsername = prompt("Новый логин:", user.username);
+            if (newUsername) user.username = newUsername;
+            
+            const newPassword = prompt("Новый пароль (оставьте пустым чтобы не менять):");
+            if (newPassword) user.password = newPassword;
+            
+            saveData();
+            showNotification("Данные обновлены", "success");
+            loadPersonnelTable();
+        }
+
+        // Удаление пользователя
+        function deleteUser(userId) {
+            const user = systemData.personnel.find(p => p.id === userId);
+            if (!user) return;
+            
+            if (confirm(`Удалить пользователя ${user.fullName}?`)) {
+                const index = systemData.personnel.findIndex(p => p.id === userId);
+                systemData.personnel.splice(index, 1);
+                
+                // Уменьшить счетчик отдела
+                if (user.department in systemData.departments) {
+                    systemData.departments[user.department].current--;
+                }
+                
+                saveData();
+                showNotification("Пользователь удален", "success");
+                loadPersonnelTable();
+            }
+        }
+
+        // Вспомогательные функции
+        function generateId() {
+            return 'F47-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        }
+
+        function getRandomColor() {
+            const colors = ['#FF6B6B', '#4ECDC4', '#FFD166', '#06D6A0', '#118AB2', '#EF476F', '#073B4C'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function getRoleName(role) {
+            const roles = {
+                'o5': 'O5-Совет',
+                'head': 'Руководитель',
+                'personnel': 'Сотрудник'
+            };
+            return roles[role] || role;
+        }
+
+        function getRecipientName(to) {
+            if (to === 'all') return 'Все сотрудники';
+            if (to.startsWith('dept_')) {
+                const deptKey = to.replace('dept_', '');
+                const dept = systemData.departments[deptKey];
+                return dept ? `Отдел: ${dept.name}` : 'Отдел';
+            }
+            if (to.startsWith('user_')) {
+                const userId = to.replace('user_', '');
+                const user = systemData.personnel.find(p => p.id === userId);
+                return user ? user.fullName : 'Пользователь';
+            }
+            return to;
+        }
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function composeMail() {
+            switchPanel('mail');
+            loadMail('new');
+        }
+
+        // Инициализация
+        loadData();
+    </script>
+</body>
+</html>
